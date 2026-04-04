@@ -186,6 +186,9 @@ require('worktrees').setup {
             require('mini.session').write(nil, { force = true, verbose = false })
             vim.cmd('silent! %bwipeout!')
 
+            -- Prevent dangling LSP sessions.
+            vim.lsp.stop_client(vim.lsp.get_clients())
+
             -- Out of the box, worktrees.nvim changes a working directory on worktree switch.
             -- Optionally, you may prevent this by returning "false".
             -- return false
