@@ -3,6 +3,7 @@ local utils = require("worktrees.utils")
 local status = require("worktrees.status")
 
 ---@class worktrees.Hooks
+---@field on_before_switch fun(from: string, to: string, git_path_info: worktrees.GitPathInfo): boolean | nil
 ---@field on_switch fun(from: string, to: string, git_path_info: worktrees.GitPathInfo)
 ---@field on_add fun(name: string, path: string, branch: string)
 ---@field on_remove fun(name: string)
@@ -162,6 +163,20 @@ M.switch_worktree = function(path)
     end
 
     vim.schedule(function()
+        local prev_path = vim.loop.cwd() --[[@as string]]
+
+        if M._options.hooks.on_before_switch then
+            -- on_before_switch can intercept worktree switch logic if returns 'false'.
+            local continue = M._options.hooks.on_before_switch(
+                prev_path,
+                found_path,
+                before_git_path_info
+            )
+            if continue ~= nil and not continue then
+                return
+            end
+        end
+
         -- Clear jumplist so that no file in the old worktree is present
         -- in the jumplist for accidental switching of worktrees
         vim.cmd("clearjumps")
@@ -177,7 +192,6 @@ M.switch_worktree = function(path)
 
         -- Change neovim cwd
         if M._options.hooks.on_switch then
-            local prev_path = vim.loop.cwd() --[[@as string]]
             vim.cmd("cd " .. found_path)
             M._options.hooks.on_switch(
                 prev_path,

@@ -120,10 +120,14 @@ or with lua
 ## Hooks
 
 You can provide hooks to perform additional actions on worktree addition, removal and switching
+
 ```lua
 require('worktrees').setup {
     hooks = {
         on_add = function(name, path, branch)
+            -- your action here
+        end,
+        on_before_switch = function(from, to, git_path_info)
             -- your action here
         end,
         on_switch = function(from, to, git_path_info)
@@ -170,6 +174,32 @@ require('worktrees').setup {
 }
 
 ```
+
+### Example - save worktree session before switch
+
+```lua
+require('worktrees').setup {
+    swap_current_buffer = false,
+    hooks = {
+        on_before_switch = function(from, to, git_path_info)
+            -- Persist worktree session before worktree switch.
+            require('mini.session').write(nil, { force = true, verbose = false })
+            vim.cmd('silent! %bwipeout!')
+
+            -- Out of the box, worktrees.nvim changes a working directory on worktree switch.
+            -- Optionally, you may prevent this by returning "false".
+            -- return false
+        end,
+        on_switch = function(from, to, git_path_info)
+            -- Restore session after worktree changes.
+            if vim.fn.filereadable('Session.vim') then
+              require('mini.session').read(nil, { force = true, verbose = false })
+            end
+        end,
+    }
+}
+```
+
 ## Telescope
 
 The extension can be loaded with telescope
@@ -226,4 +256,4 @@ git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 
 ## TODO
 
-- [ ]  Options to customize behavior
+- [ ] Options to customize behavior
