@@ -6,6 +6,7 @@ local status = require("worktrees.status")
 ---@field on_before_switch fun(from: string, to: string, git_path_info: worktrees.GitPathInfo): boolean | nil
 ---@field on_switch fun(from: string, to: string, git_path_info: worktrees.GitPathInfo)
 ---@field on_add fun(name: string, path: string, branch: string)
+---@field on_before_remove fun(path: string) | nil
 ---@field on_remove fun(name: string)
 
 ---@class worktrees.Options
@@ -223,6 +224,10 @@ M.remove_worktree = function(path)
     if found_path == nil then
         status:warn("Could not determine path to remove. Aborting...")
         return
+    end
+
+    if M._options.hooks.on_before_remove then
+        M._options.hooks.on_before_remove(found_path)
     end
 
     if found_path == vim.loop.cwd() then

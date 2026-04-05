@@ -175,7 +175,7 @@ require('worktrees').setup {
 
 ```
 
-### Example - save worktree session before switch
+### Example - `mini.sessions` integration
 
 ```lua
 require('worktrees').setup {
@@ -183,7 +183,7 @@ require('worktrees').setup {
     hooks = {
         on_before_switch = function(from, to, git_path_info)
             -- Persist worktree session before worktree switch.
-            require('mini.session').write(nil, { force = true, verbose = false })
+            MiniSessions.write(nil, { force = true, verbose = false })
             vim.cmd('silent! %bwipeout!')
 
             -- Prevent dangling LSP sessions.
@@ -195,10 +195,19 @@ require('worktrees').setup {
         end,
         on_switch = function(from, to, git_path_info)
             -- Restore session after worktree changes.
-            if vim.fn.filereadable('Session.vim') then
-              require('mini.session').read(nil, { force = true, verbose = false })
+            if vim.fn.filereadable(MiniSessions.config.file) then
+              MiniSessions.read(nil, { force = true, verbose = false })
             end
         end,
+        on_before_remove = function(path)
+            if path ~= vim.loop.cwd() or vim.v.this_session == '' then
+              return
+            end
+
+            -- Detach session if active worktree will be removed.
+            MiniSessions.delete(nil, { force = true, verbose = false })
+            vim.v.this_session = ''
+        end
     }
 }
 ```
