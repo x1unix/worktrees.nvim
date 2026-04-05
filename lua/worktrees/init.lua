@@ -5,9 +5,9 @@ local status = require("worktrees.status")
 ---@class worktrees.Hooks
 ---@field on_before_switch fun(from: string, to: string, git_path_info: worktrees.GitPathInfo): boolean | nil
 ---@field on_switch fun(from: string, to: string, git_path_info: worktrees.GitPathInfo)
----@field on_add fun(name: string, path: string, branch: string)
+---@field on_add fun(name: string, path: string, branch: string) | nil
 ---@field on_before_remove fun(path: string) | nil
----@field on_remove fun(name: string)
+---@field on_remove fun(name: string) | nil
 
 ---@class worktrees.Options
 ---@field hooks? worktrees.Hooks,
