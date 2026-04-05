@@ -175,7 +175,7 @@ require('worktrees').setup {
 
 ```
 
-### Example - `mini.sessions` integration
+### Example - per-worktree sessions using `mini.sessions`
 
 ```lua
 require('worktrees').setup {
